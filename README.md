@@ -1,33 +1,79 @@
-This is a [Plasmo extension](https://docs.plasmo.com/) project bootstrapped with [`plasmo init`](https://www.npmjs.com/package/plasmo).
+# Read Later Extension
 
-## Getting Started
+A powerful Chromium-based extension to "read later" by archiving entire windows, including their tab groups, and restoring them exactly as they were. Built with [Plasmo](https://www.plasmo.com/), React, and TypeScript.
 
-First, run the development server:
+## Features
 
+- **Window Archiving**: Save an entire window including all tabs and metadata.
+- **Tab Group Support**: Preserves tab groups (names, colors, collapsed state) when archiving and restoring.
+- **Visual Dashboard**: A clean, dark-mode compatible dashboard to manage your saved windows.
+- **Granular Control**: Delete individual tabs from an archive or delete entire archives.
+- **Context Menu Integration**: distinct "Save this window for later" option in the right-click menu.
+
+## Installation & Setup
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v16 or higher)
+- [npm](https://www.npmjs.com/) (usually comes with Node.js)
+
+### 1. Clone & Install
 ```bash
-pnpm dev
-# or
-npm run dev
+# Clone the repository (if applicable) or navigate to project folder
+cd ReadLaterPlugin
+
+# Install dependencies
+npm install
 ```
 
-Open your browser and load the appropriate development build. For example, if you are developing for the chrome browser, using manifest v3, use: `build/chrome-mv3-dev`.
-
-You can start editing the popup by modifying `popup.tsx`. It should auto-update as you make changes. To add an options page, simply add a `options.tsx` file to the root of the project, with a react component default exported. Likewise to add a content page, add a `content.ts` file to the root of the project, importing some module and do some logic, then reload the extension on your browser.
-
-For further guidance, [visit our Documentation](https://docs.plasmo.com/)
-
-## Making production build
-
-Run the following:
+### 2. Build the Extension
+To create a production-ready build for Chrome:
 
 ```bash
-pnpm build
-# or
 npm run build
 ```
+This will create a `build/chrome-mv3-prod` directory.
 
-This should create a production bundle for your extension, ready to be zipped and published to the stores.
+### 3. Load into Chrome
+1. Open Google Chrome and navigate to `chrome://extensions/`.
+2. Enable **Developer mode** using the toggle switch in the top right corner.
+3. Click the **Load unpacked** button.
+4. Select the `build/chrome-mv3-prod` folder inside your project directory.
+5. The extension "Read Later" should now appear in your list.
 
-## Submit to the webstores
+## Usage Guide
 
-The easiest way to deploy your Plasmo extension is to use the built-in [bpp](https://bpp.browser.market) GitHub action. Prior to using this action however, make sure to build your extension and upload the first version to the store to establish the basic credentials. Then, simply follow [this setup instruction](https://docs.plasmo.com/framework/workflows/submit) and you should be on your way for automated submission!
+### Archiving a Window
+1. Open a window with multiple tabs and/or tab groups that you want to save.
+2. **Right-click** anywhere on a webpage background.
+3. Select **"Save this window for later"** from the context menu.
+4. The window is now saved globally in your browser storage. You can close it safely.
+
+### Viewing & Managing Archives
+1. Pin the **Read Later** extension icon to your browser toolbar for easy access.
+2. Click the extension icon.
+3. Click **"Open Dashboard"**.
+4. You will see a list of all archived windows, sorted by date.
+   - **Expand**: Click on a window card to view the list of tabs and groups inside.
+   - **Delete Tab**: Hover over a tab in the expanded view and click the **×** button to remove just that tab.
+   - **Delete Window**: Click the **Delete** button on the window card to remove the entire archive.
+
+### Restoring a Window
+1. From the Dashboard, find the window you want to reopen.
+2. Click the **Restore** button.
+3. A new window will open with all your tabs loaded and organized into their original groups.
+
+## Development
+
+To run the extension in development mode with live reloading:
+
+```bash
+npm run dev
+```
+1. Load the `build/chrome-mv3-dev` folder in `chrome://extensions/`.
+2. Changes to the code will automatically rebuild the extension.
+
+## Tech Stack
+- **Framework**: Plasmo
+- **UI**: React 18, TypeScript
+- **Storage**: Chrome Storage API
+- **Styling**: Native CSS Variables (Dark mode support)

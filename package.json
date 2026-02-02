@@ -1,9 +1,9 @@
 {
-  "name": "read-later",
-  "displayName": "Read later",
+  "name": "read-later-extension",
+  "displayName": "Read Later",
   "version": "0.0.1",
-  "description": "A basic Plasmo extension.",
-  "author": "Plasmo Corp. <foss@plasmo.com>",
+  "description": "Archive windows and restore them later.",
+  "author": "Antigravity",
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
@@ -24,6 +24,12 @@
     "typescript": "5.3.3"
   },
   "manifest": {
+    "permissions": [
+      "contextMenus",
+      "tabs",
+      "tabGroups",
+      "storage"
+    ],
     "host_permissions": [
       "https://*/*"
     ]
