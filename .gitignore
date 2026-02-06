@@ -30,4 +30,6 @@ dist/
 .plasmo
 
 # typescript
-.tsbuildinfo
+
+# python venv
+venv/
