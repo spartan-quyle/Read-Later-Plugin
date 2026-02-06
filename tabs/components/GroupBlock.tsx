@@ -90,7 +90,7 @@ export function GroupBlock({
       {!collapsed && (
         <Droppable droppableId={`group-inner-${winId}-${groupIndex}`} type="ITEM">
             {(provided) => (
-                <ul className="tab-list" ref={provided.innerRef} {...provided.droppableProps}>
+                <ul className="tab-list group-content" ref={provided.innerRef} {...provided.droppableProps}>
                   {tabsWithIndices.map(({ tab, index }, visualIndex) => (
                     <Draggable key={tab.id || `t-${index}`} draggableId={tab.id || `t-${index}`} index={visualIndex}>
                         {(provided) => (

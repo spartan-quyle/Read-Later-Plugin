@@ -630,3 +630,14 @@ body {
     font-size: 0.7rem;
 }
 
+
+.group-content {
+    margin-left: 1rem;
+    padding-left: 0; 
+    border-left: 3px solid var(--text-color);
+    background: rgba(0,0,0,0.02);
+}
+
+.group-content .tab-item {
+    padding-left: 1rem;
+}
