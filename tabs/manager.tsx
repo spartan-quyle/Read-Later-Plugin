@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd"
-import { WindowCard, ContextMenu } from "./components"
+import { WindowCard, ContextMenu, Logo, Manual } from "./components"
 import { useArchiveManager } from "./hooks/useArchiveManager"
 import { useDragAndDrop } from "./hooks/useDragAndDrop"
 import { useImportExport } from "./hooks/useImportExport"
@@ -8,7 +8,7 @@ import { useContextMenu } from "./hooks/useContextMenu"
 import "./manager.css"
 
 function Manager() {
-  const [activeTab, setActiveTab] = useState<'archives' | 'trash'>('archives')
+  const [activeTab, setActiveTab] = useState<'archives' | 'trash' | 'manual'>('archives')
   const [manualOrder, setManualOrder] = useState(false)
 
   const archive = useArchiveManager()
@@ -48,21 +48,30 @@ function Manager() {
   })
 
   return (
-    <div className="container content-container">
-       {/* Header */}
-       <div className="header">
-          <div className="header-content">
-              <h1>Read Later Manager</h1>
-          </div>
-          <div style={{ display: "flex", gap: "10px" }}>
-            <button className="btn" onClick={archive.createWindow} title="Create a New Empty Window">+ Add Window</button>
-            <button className="btn" onClick={() => setImportModalOpen(true)}>Import from List</button>
-            <button className="btn" onClick={() => setImportAllModalOpen(true)}>Import All</button>
-            <button className="btn" onClick={io.actions.handleExportAll}>Export All</button>
-          </div>
+    <div className="container">
+       {/* Header - Full Width / Wider */}
+       <div className="header-container">
+           <div className="header">
+              <div className="header-content">
+                  <h1>
+                    <Logo width={32} height={32} />
+                    READ LATER
+                  </h1>
+                  <p className="subtitle">Manager</p>
+              </div>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button className="btn" onClick={archive.createWindow} title="Create a New Empty Window">+ Add Window</button>
+                <button className="btn" onClick={() => setImportModalOpen(true)}>Import from List</button>
+                <button className="btn" onClick={() => setImportAllModalOpen(true)}>Import All</button>
+                <button className="btn" onClick={io.actions.handleExportAll}>Export All</button>
+              </div>
+           </div>
        </div>
 
-       {/* Tabs for Archives / Trash */}
+       {/* Main Content - Centered & Fixed Width */}
+       <div className="content-container">
+
+       {/* Tabs for Archives / Trash / Manual */}
        <div className="tab-nav">
         <button 
           onClick={() => setActiveTab('archives')}
@@ -76,10 +85,18 @@ function Manager() {
         >
           Trash ({archive.trashedItems.length})
         </button>
+        <button 
+          onClick={() => setActiveTab('manual')}
+          className={`tab-btn ${activeTab === 'manual' ? 'active' : ''}`}
+        >
+          Manual
+        </button>
       </div>
 
        {/* List Content */}
-       {activeTab === 'archives' ? (
+       {activeTab === 'manual' ? (
+           <Manual />
+       ) : activeTab === 'archives' ? (
            <DragDropContext onDragEnd={dnd.onDragEnd} onDragStart={dnd.onDragStart}>
               <Droppable droppableId="window-list" type="WINDOW">
                  {(provided) => (
@@ -221,6 +238,10 @@ function Manager() {
                     />
                     <div className="modal-actions">
                         <button className="btn" onClick={() => setExportModalOpen(false)}>Close</button>
+                        <button className="btn" onClick={() => {
+                            navigator.clipboard.writeText(exportContent)
+                            alert("Copied to clipboard!")
+                        }}>Copy</button>
                         <button onClick={io.actions.downloadExport} className="btn btn-primary">Download .txt</button>
                     </div>
                 </div>
@@ -258,6 +279,10 @@ function Manager() {
                    />
                    <div className="modal-actions">
                        <button className="btn" onClick={() => setExportAllModalOpen(false)}>Close</button>
+                       <button className="btn" onClick={() => {
+                            navigator.clipboard.writeText(exportAllContent)
+                            alert("Copied to clipboard!")
+                       }}>Copy</button>
                        <button onClick={io.actions.downloadExportAll} className="btn btn-primary">Download .json</button>
                    </div>
                </div>
@@ -284,6 +309,7 @@ function Manager() {
            </div>
        )}
 
+    </div>
     </div>
   )
 }

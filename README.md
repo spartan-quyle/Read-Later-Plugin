@@ -7,6 +7,7 @@ A powerful Chromium-based extension to "read later" by archiving entire windows,
 - **Window Archiving**: Save an entire window including all tabs and metadata.
 - **Tab Group Support**: Preserves tab groups (names, colors, collapsed state) when archiving and restoring.
 - **Visual Dashboard**: A clean, dark-mode compatible dashboard to manage your saved windows.
+- **Manual & Guide**: Built-in visual manual to help you master the extension's features.
 - **Granular Control**: Delete individual tabs from an archive or delete entire archives.
 - **Context Menu Integration**: distinct "Save this window for later" option in the right-click menu.
 
