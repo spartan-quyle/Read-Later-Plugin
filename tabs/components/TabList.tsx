@@ -11,6 +11,7 @@ export interface TabListProps {
   onEditGroup: (winId: string, gIndex: number, title: string, color: chrome.tabGroups.ColorEnum) => void
   onUngroupTabs: (winId: string, gIndex: number) => void
   onTabContextMenu?: (e: React.MouseEvent, tab: SavedTab, tabIndex: number, windowId: string) => void
+  isDraggingGroup?: boolean
 }
 
 export function TabList({ 
@@ -18,8 +19,9 @@ export function TabList({
   onDeleteTab, 
   onDeleteGroup, 
   onEditGroup, 
-  onUngroupTabs,
-  onTabContextMenu 
+  onUngroupTabs, 
+  onTabContextMenu,
+  isDraggingGroup
 }: TabListProps) {
   const renderItems = () => {
     const nodes: React.ReactNode[] = []
@@ -41,7 +43,7 @@ export function TabList({
 
         nodes.push(
             <Draggable key={draggableId} draggableId={draggableId} index={visualIndex}>
-                {(provided) => (
+                {(provided, snapshot) => (
                     <div ref={provided.innerRef} {...provided.draggableProps} style={provided.draggableProps.style}>
                         <GroupBlock
                             group={group}
@@ -54,6 +56,8 @@ export function TabList({
                             winId={window.id}
                             dragHandleProps={provided.dragHandleProps}
                             groupIndex={capturedGroupIndex}
+                            isDropDisabled={isDraggingGroup}
+                            isDragging={snapshot.isDragging}
                         />
                     </div>
                 )}

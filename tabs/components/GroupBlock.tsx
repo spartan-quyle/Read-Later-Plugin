@@ -18,6 +18,8 @@ export interface GroupBlockProps {
   winId: string
   dragHandleProps?: any
   groupIndex: number
+  isDropDisabled?: boolean
+  isDragging?: boolean
 }
 
 export function GroupBlock({ 
@@ -30,26 +32,70 @@ export function GroupBlock({
   onTabContextMenu,
   winId, 
   dragHandleProps, 
-  groupIndex 
+  groupIndex,
+  isDropDisabled,
+  isDragging
 }: GroupBlockProps) {
   const [collapsed, setCollapsed] = useState(group.collapsed)
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(group.title)
   const [editColor, setEditColor] = useState(group.color)
   
+  // Track previous expansion state to restore after drag
+  const shouldRestoreRef = React.useRef(false)
+  const prevIsDragging = React.useRef(isDragging)
+
+  // Effect to restore state when drag ends
+  React.useEffect(() => {
+    if (prevIsDragging.current && !isDragging) {
+        if (shouldRestoreRef.current) {
+            setCollapsed(false)
+            shouldRestoreRef.current = false
+        }
+    }
+    prevIsDragging.current = isDragging
+  }, [isDragging])
+
+  // Also usage of isDragging prop to force visual collapse if logic elsewhere relies on it,
+  // though MouseDown should handle the primary visual change.
+  const isVisualCollapsed = isDragging ? true : collapsed
+
   const handleSaveEdit = () => {
       onEditGroup(editTitle, editColor)
       setIsEditing(false)
   }
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+      if (!collapsed) {
+          setCollapsed(true)
+          shouldRestoreRef.current = true
+      }
+      dragHandleProps?.onMouseDown?.(e)
+  }
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+      // If it was just a click (no drag started), restore immediately
+      if (shouldRestoreRef.current && !isDragging) {
+          setCollapsed(false)
+          shouldRestoreRef.current = false
+      }
+      dragHandleProps?.onMouseUp?.(e)
+  }
+
   return (
     <li className="tab-group-container">
       <div className="group-header-row" onClick={() => !isEditing && setCollapsed(!collapsed)}>
-        <div {...dragHandleProps} className="drag-handle" title="Drag Group">
+        <div 
+            {...dragHandleProps} 
+            className="drag-handle" 
+            title="Drag Group"
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+        >
              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></svg>
         </div>
         <div className="group-info">
-          <div className="group-color-dot" style={{ backgroundColor: group.color || "grey" }}></div>
+          <div className="group-color-dot" style={{ backgroundColor: (isEditing ? editColor : group.color) || "grey" }}></div>
           {isEditing ? (
               <input 
                   type="text" 
@@ -87,8 +133,8 @@ export function GroupBlock({
               ))}
           </div>
       )}
-      {!collapsed && (
-        <Droppable droppableId={`group-inner-${winId}-${groupIndex}`} type="ITEM">
+      {!isVisualCollapsed && (
+        <Droppable droppableId={`group-inner-${winId}-${groupIndex}`} type="ITEM" isDropDisabled={isDropDisabled}>
             {(provided) => (
                 <ul className="tab-list group-content" ref={provided.innerRef} {...provided.droppableProps}>
                   {tabsWithIndices.map(({ tab, index }, visualIndex) => (

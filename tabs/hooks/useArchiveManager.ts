@@ -260,9 +260,24 @@ export const useArchiveManager = () => {
     await updateArchivedWindow(updatedWin)
   }
 
+  const createWindow = async () => {
+      const newWin: ArchivedWindow = {
+          id: crypto.randomUUID(),
+          timestamp: Date.now(),
+          title: "New Window",
+          tabs: [],
+          groups: [],
+          isStarred: false
+      }
+      // Add to beginning of list
+      const newWindows = [newWin, ...windows]
+      setWindows(newWindows)
+      await chrome.storage.local.set({ "archivedWindows": newWindows })
+  }
+
   return {
     windows,
-    setWindows, // exposed for DnD if needed, or prefer action
+    setWindows, 
     trashedItems,
     loadWindows,
     toggleStar,
@@ -275,6 +290,8 @@ export const useArchiveManager = () => {
     permanentDelete,
     createGroup,
     addTabToWindow,
-    updateArchivedWindow // exposed for direct updates if needed (e.g. context menu)
+    updateArchivedWindow,
+    createWindow
   }
 }
+

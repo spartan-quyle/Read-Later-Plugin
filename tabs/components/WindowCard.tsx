@@ -17,6 +17,7 @@ export interface WindowCardProps {
   onAddTab: (winId: string) => void
   onTabContextMenu?: (e: React.MouseEvent, tab: SavedTab, tabIndex: number, windowId: string) => void
   dragHandleProps?: any
+  isDraggingGroup?: boolean
 }
 
 export function WindowCard({ 
@@ -33,7 +34,8 @@ export function WindowCard({
   onUngroupTabs, 
   onAddTab, 
   onTabContextMenu,
-  dragHandleProps 
+  dragHandleProps,
+  isDraggingGroup
 }: WindowCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -116,6 +118,7 @@ export function WindowCard({
             onEditGroup={onEditGroup}
             onUngroupTabs={onUngroupTabs}
             onTabContextMenu={onTabContextMenu}
+            isDraggingGroup={isDraggingGroup}
           />
         </div>
       )}

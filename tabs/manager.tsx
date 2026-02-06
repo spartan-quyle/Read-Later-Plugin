@@ -55,6 +55,7 @@ function Manager() {
               <h1>Read Later Manager</h1>
           </div>
           <div style={{ display: "flex", gap: "10px" }}>
+            <button className="btn" onClick={archive.createWindow} title="Create a New Empty Window">+ Add Window</button>
             <button className="btn" onClick={() => setImportModalOpen(true)}>Import from List</button>
             <button className="btn" onClick={() => setImportAllModalOpen(true)}>Import All</button>
             <button className="btn" onClick={io.actions.handleExportAll}>Export All</button>
@@ -79,7 +80,7 @@ function Manager() {
 
        {/* List Content */}
        {activeTab === 'archives' ? (
-           <DragDropContext onDragEnd={dnd.onDragEnd}>
+           <DragDropContext onDragEnd={dnd.onDragEnd} onDragStart={dnd.onDragStart}>
               <Droppable droppableId="window-list" type="WINDOW">
                  {(provided) => (
                     <div 
@@ -129,6 +130,7 @@ function Manager() {
                                             onDeleteTab={archive.deleteTab}
                                             onDeleteGroup={archive.deleteGroup}
                                             onTabContextMenu={ctx.handleTabContextMenu}
+                                            isDraggingGroup={dnd.isDraggingGroup}
                                         />
                                     </div>
                                 )}

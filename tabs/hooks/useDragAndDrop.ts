@@ -1,4 +1,5 @@
-import type { DropResult } from "@hello-pangea/dnd"
+import { useState } from "react"
+import type { DropResult, DragStart } from "@hello-pangea/dnd"
 import type { ArchivedWindow, SavedGroup, SavedTab } from "~lib/types"
 
 interface DragAndDropDeps {
@@ -8,8 +9,19 @@ interface DragAndDropDeps {
 }
 
 export const useDragAndDrop = ({ windows, setWindows, updateArchivedWindow }: DragAndDropDeps) => {
-    
+    const [isDraggingGroup, setIsDraggingGroup] = useState(false)
+
+    const onDragStart = (initial: DragStart) => {
+        // Check if the draggableId matches any group in any window
+        // Group ID logic: group.id OR group-{winId}-{index}
+        const isGroup = windows.some(w => 
+            w.groups.some(g => g.id === initial.draggableId || `group-${w.id}-${w.groups.indexOf(g)}` === initial.draggableId)
+        )
+        setIsDraggingGroup(isGroup)
+    }
+
     const onDragEnd = async (result: DropResult) => {
+        setIsDraggingGroup(false)
         const { source, destination, type, draggableId } = result
         
         if (!destination) return
@@ -39,11 +51,11 @@ export const useDragAndDrop = ({ windows, setWindows, updateArchivedWindow }: Dr
         // === ITEM (Tab/Group) REORDERING ===
         
         // 1. Identify Source and Dest Window IDs
+        // Fix: Use substring/lastIndexOf to handle UUIDs safely
         let sourceWinId = ""
         if (source.droppableId.startsWith("win-content-")) {
             sourceWinId = source.droppableId.replace("win-content-", "")
         } else if (source.droppableId.startsWith("group-inner-")) {
-            // Format: group-inner-{winId}-{groupIdx}
             const lastDash = source.droppableId.lastIndexOf("-")
             sourceWinId = source.droppableId.substring("group-inner-".length, lastDash)
         }
@@ -63,6 +75,7 @@ export const useDragAndDrop = ({ windows, setWindows, updateArchivedWindow }: Dr
   
         // Clone state for mutation
         const newWindows = [...windows]
+        // Clone source window deeply enough for our splices
         const sourceWin = { ...newWindows[sourceWinIndex], tabs: [...newWindows[sourceWinIndex].tabs], groups: [...newWindows[sourceWinIndex].groups] }
         newWindows[sourceWinIndex] = sourceWin
         
@@ -123,9 +136,8 @@ export const useDragAndDrop = ({ windows, setWindows, updateArchivedWindow }: Dr
         
         // CASE A: Dropping into Root (Ungrouped/Group List)
         if (destination.droppableId.startsWith("win-content-")) {
-            // Construct Visual List to map destination.index to Data Index
-            type VisualItem = { type: 'TAB' | 'GROUP', originalIndex: number, group?: SavedGroup, tab?: SavedTab }
-            // Helper to rebuild visual list logic (mimicking TabList render)
+            // Rebuild Visual List Logic...
+            type VisualItem = { type: 'TAB' | 'GROUP', originalIndex: number, originalGroupIndex?: number }
             const rebuildVisualList = () => {
                 const list: VisualItem[] = []
                 let lastGroupIndex = -1
@@ -133,58 +145,50 @@ export const useDragAndDrop = ({ windows, setWindows, updateArchivedWindow }: Dr
                  destWin.tabs.forEach((tab, i) => {
                      const gIndex = tab.groupIndex ?? -1
                      if (gIndex !== lastGroupIndex) {
-                         if (lastGroupIndex !== -1) {
-                             if (destWin.groups[lastGroupIndex]) {
-                                 list.push({ type: 'GROUP', group: destWin.groups[lastGroupIndex], originalIndex: lastGroupIndex })
-                             }
+                         if (lastGroupIndex !== -1 && destWin.groups[lastGroupIndex]) {
+                             list.push({ type: 'GROUP', originalIndex: lastGroupIndex })
                          }
                          lastGroupIndex = gIndex
                      }
-                     
                      if (gIndex === -1) {
-                         list.push({ type: 'TAB', tab, originalIndex: i })
+                         list.push({ type: 'TAB', originalIndex: i })
                      }
                  })
                  if (lastGroupIndex !== -1 && destWin.groups[lastGroupIndex]) {
-                     list.push({ type: 'GROUP', group: destWin.groups[lastGroupIndex], originalIndex: lastGroupIndex })
+                     list.push({ type: 'GROUP', originalIndex: lastGroupIndex })
                  }
                  return list
             }
             
             const visualListItems = rebuildVisualList()
-            
-            // Determine Insertion Data Index
-            let insertIndex = destWin.tabs.length // Default append
+            let insertIndex = destWin.tabs.length
             
             if (destination.index < visualListItems.length) {
                 const target = visualListItems[destination.index]
                 if (target.type === 'TAB') {
                     insertIndex = target.originalIndex
                 } else {
-                    // Insert before the FIRST tab of this group
+                    // Logic: Insert BEFORE the first tab of this group
                     insertIndex = destWin.tabs.findIndex(t => t.groupIndex === target.originalIndex)
                     if (insertIndex === -1) insertIndex = destWin.tabs.length
                 }
             }
   
             if (draggedItemType === 'GROUP') {
-                // Add Group to Dest
                 const newGroupIndex = destWin.groups.length
                 destWin.groups.push(payloadGroup!)
                 payloadTabs.forEach(t => t.groupIndex = newGroupIndex)
-                
-                // Insert tabs
                 destWin.tabs.splice(insertIndex, 0, ...payloadTabs)
             } else {
-                // Tab to Ungrouped
                 payloadTabs[0].groupIndex = -1
                 destWin.tabs.splice(insertIndex, 0, payloadTabs[0])
             }
   
         // CASE B: Dropping into a Group
         } else if (destination.droppableId.startsWith("group-inner-")) {
-            const parts = destination.droppableId.split("-")
-            const targetGroupIndex = parseInt(parts[3])
+            // Fix: Use lastIndexOf to parse index
+            const lastDash = destination.droppableId.lastIndexOf("-")
+            const targetGroupIndex = parseInt(destination.droppableId.substring(lastDash + 1))
             
             if (!destWin.groups[targetGroupIndex]) return 
   
@@ -193,11 +197,10 @@ export const useDragAndDrop = ({ windows, setWindows, updateArchivedWindow }: Dr
             let insertIndex = -1
             
             if (destination.index < groupTabs.length) {
-                // Insert before sibling
                 const sibling = groupTabs[destination.index]
                 insertIndex = destWin.tabs.findIndex(t => t.id === sibling.id)
             } else {
-                // Append to group -> Find last tab of group
+                // Append...
                 let lastIndex = -1
                 for (let i = destWin.tabs.length - 1; i >= 0; i--) {
                     if (destWin.tabs[i].groupIndex === targetGroupIndex) {
@@ -217,5 +220,5 @@ export const useDragAndDrop = ({ windows, setWindows, updateArchivedWindow }: Dr
         await chrome.storage.local.set({ "archivedWindows": newWindows })
     }
 
-    return { onDragEnd }
+    return { onDragEnd, onDragStart, isDraggingGroup }
 }

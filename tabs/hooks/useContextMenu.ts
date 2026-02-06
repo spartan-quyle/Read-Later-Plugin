@@ -37,7 +37,38 @@ export const useContextMenu = ({ windows, updateArchivedWindow }: ContextMenuDep
     if (!win) return
 
     const newTabs = [...win.tabs]
-    newTabs[contextMenu.tabIndex] = { ...newTabs[contextMenu.tabIndex], groupIndex: targetGroupIndex }
+    
+    // 1. Remove tab from current position
+    // We rely on contextMenu.tabIndex being accurate at the time of click.
+    // Since menu is modal-like (blocks interaction), logic should hold.
+    const [movedTab] = newTabs.splice(contextMenu.tabIndex, 1)
+
+    // 2. Update Group Index
+    const updatedTab = { ...movedTab, groupIndex: targetGroupIndex }
+
+    // 3. Find Insertion Index to maintain Contiguity
+    let insertIndex = newTabs.length // Default: append to end (safe for Ungrouped or New Groups)
+
+    if (targetGroupIndex !== -1) {
+        // Find the last tab belonging to this group
+        // Loop backwards
+        let lastGroupIndex = -1
+        for (let i = newTabs.length - 1; i >= 0; i--) {
+            if (newTabs[i].groupIndex === targetGroupIndex) {
+                 lastGroupIndex = i
+                 break
+            }
+        }
+        
+        if (lastGroupIndex !== -1) {
+            // Insert AFTER the last member of the group
+            insertIndex = lastGroupIndex + 1
+        }
+        // If group has no members yet, appending to end is fine (visual order = creation order typically)
+    }
+
+    // 4. Insert at new position
+    newTabs.splice(insertIndex, 0, updatedTab)
     
     await updateArchivedWindow({ ...win, tabs: newTabs })
     setContextMenu(null)
@@ -58,8 +89,12 @@ export const useContextMenu = ({ windows, updateArchivedWindow }: ContextMenuDep
       collapsed: false
     }
 
+    // Logic: Remove tab, Append to end (creates new group visually at bottom), Add Group to registry
     const newTabs = [...win.tabs]
-    newTabs[contextMenu.tabIndex] = { ...newTabs[contextMenu.tabIndex], groupIndex: newGroupIndex }
+    const [movedTab] = newTabs.splice(contextMenu.tabIndex, 1)
+    
+    const updatedTab = { ...movedTab, groupIndex: newGroupIndex }
+    newTabs.push(updatedTab)
 
     await updateArchivedWindow({ 
       ...win, 
