@@ -48,6 +48,7 @@ async function archiveWindow(windowId: number) {
   const groups = await chrome.tabGroups.query({ windowId })
 
   const savedGroups: SavedGroup[] = groups.map((g) => ({
+    id: crypto.randomUUID(),
     originalId: g.id,
     title: g.title || "",
     color: g.color,
@@ -60,6 +61,7 @@ async function archiveWindow(windowId: number) {
       groupIndex = savedGroups.findIndex((sg) => sg.originalId === t.groupId)
     }
     return {
+      id: crypto.randomUUID(),
       url: t.url || "",
       title: t.title || "",
       favIconUrl: t.favIconUrl || "",
