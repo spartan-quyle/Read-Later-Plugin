@@ -135,12 +135,22 @@ export function GroupBlock({
       )}
       {!isVisualCollapsed && (
         <Droppable droppableId={`group-inner-${winId}-${groupIndex}`} type="ITEM" isDropDisabled={isDropDisabled}>
-            {(provided) => (
-                <ul className="tab-list group-content" ref={provided.innerRef} {...provided.droppableProps}>
+            {(provided, snapshot) => (
+                <ul 
+                    className={`tab-list group-content ${snapshot.isDraggingOver ? "is-dragging-over" : ""}`}
+                    ref={provided.innerRef} 
+                    {...provided.droppableProps}
+                    style={{ minHeight: "10px" }} // Ensure drop target exists
+                >
                   {tabsWithIndices.map(({ tab, index }, visualIndex) => (
                     <Draggable key={tab.id || `t-${index}`} draggableId={tab.id || `t-${index}`} index={visualIndex}>
-                        {(provided) => (
-                             <div ref={provided.innerRef} {...provided.draggableProps} style={provided.draggableProps.style}>
+                        {(provided, snapshot) => (
+                             <div 
+                                className={snapshot.isDragging ? "is-dragging" : ""}
+                                ref={provided.innerRef} 
+                                {...provided.draggableProps} 
+                                style={provided.draggableProps.style}
+                             >
                                 <TabItem
                                     tab={tab}
                                     onDelete={(e) => { e.stopPropagation(); onDeleteTab(tab, index, winId) }}

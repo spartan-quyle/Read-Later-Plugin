@@ -192,15 +192,19 @@ export const useDragAndDrop = ({ windows, setWindows, updateArchivedWindow }: Dr
             
             if (!destWin.groups[targetGroupIndex]) return 
   
-            // Logic: Find sibling in that group
+            // LOGIC: Intra-Group Reordering & Inter-Group Moves
+            // 1. Get all tabs currently in this group (excluding the one we just removed if source==dest)
             const groupTabs = destWin.tabs.filter(t => t.groupIndex === targetGroupIndex)
+            
             let insertIndex = -1
             
             if (destination.index < groupTabs.length) {
+                // Insert BEFORE the tab currently at the visual drop index
                 const sibling = groupTabs[destination.index]
                 insertIndex = destWin.tabs.findIndex(t => t.id === sibling.id)
             } else {
-                // Append...
+                // Append to end of group
+                // Find the last tab of this group in the global list
                 let lastIndex = -1
                 for (let i = destWin.tabs.length - 1; i >= 0; i--) {
                     if (destWin.tabs[i].groupIndex === targetGroupIndex) {
@@ -208,8 +212,17 @@ export const useDragAndDrop = ({ windows, setWindows, updateArchivedWindow }: Dr
                         break
                     }
                 }
+                // If group has tabs, insert after the last one. 
+                // If group is empty (no tabs found), insert at 0 or end of list? 
+                // Since this is "Append", and we are in a group, we should try to put it where the group *should* be.
+                // But simplified: insert after the last known member.
                 if (lastIndex !== -1) insertIndex = lastIndex + 1
-                else insertIndex = destWin.tabs.length 
+                else {
+                    // Group is empty (or became empty). 
+                    // Need to find where the group header is... 
+                    // For now, appending to end of window is safe fallback for new/empty groups.
+                    insertIndex = destWin.tabs.length 
+                }
             }
             
             payloadTabs[0].groupIndex = targetGroupIndex
