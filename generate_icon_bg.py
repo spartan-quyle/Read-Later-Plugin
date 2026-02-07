@@ -4,16 +4,24 @@ import numpy as np
 
 def create_logo_variant(filename, draw_func):
     # Canvas setup
-    fig, ax = plt.subplots(figsize=(5, 5), dpi=300)
-    ax.set_xlim(-20, 120)
-    ax.set_ylim(-20, 120)
-    ax.set_aspect('equal')
-    ax.axis('off')
+    # Canvas setup - FORCE FULL BLEED
+    # Create a figure
+    fig = plt.figure(figsize=(5, 5), dpi=300)
     
+    # Add an axes that covers the entire figure (0,0 to 1,1 in fraction coordinates)
+    ax = fig.add_axes([0, 0, 1, 1])
+    
+    # We will set the limits later based on the content to ensure it touches edges
+    # For now, we assume the content is centered at 50,50 with some radius.
+    # The drawing functions below are designed for a 100x100 canvas concept.
+    # We will force the limits to match the background circle exactly.
+    
+    # Let the draw function do its work
     draw_func(ax)
     
-    # Save with transparent background
-    plt.savefig(filename, transparent=True, bbox_inches='tight', pad_inches=0)
+    # Save WITHOUT bbox_inches='tight' to respect our valid [0,0,1,1] layout.
+    # This ensures the image is exactly the size of the figure, with NO padding.
+    plt.savefig(filename, transparent=True)
     plt.close()
 
 def design_with_background(ax):
@@ -25,8 +33,16 @@ def design_with_background(ax):
     bg_color = '#1B263B' # Navy
     
     # 1. Background Circle
-    # Center at 50, 50. Radius increased proportionally with bookmark scale.
-    circle = Circle((50, 50), 69, fc=bg_color, ec='none', antialiased=True)
+    center = (50, 50)
+    radius = 69
+    
+    # We want the limits to exactly match the circle's bounding box
+    # So x: [50-69, 50+69], y: [50-69, 50+69]
+    ax.set_xlim(center[0]-radius, center[0]+radius)
+    ax.set_ylim(center[1]-radius, center[1]+radius)
+    ax.axis('off')
+    
+    circle = Circle(center, radius, fc=bg_color, ec='none', antialiased=True)
     ax.add_patch(circle)
     
     # 2. The Bookmark (Scaled and Centered)
