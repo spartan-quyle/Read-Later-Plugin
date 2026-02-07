@@ -26,6 +26,9 @@ def design_1_redesigned(ax):
     # Màu sắc chủ đạo: Dark Charcoal (Than chì đậm) - Sang trọng, hiện đại.
     main_color = '#2D3436' 
     
+    scale = 1.3
+    centroid = np.array([50, 50])
+    
     # --- Khối 1: Thân chính của Bookmark (Phần dưới bên trái) ---
     # Nó giữ lại phần đuôi chữ V đặc trưng, nhưng bị cắt vát ở góc trên bên phải.
     body_points = np.array([
@@ -36,7 +39,8 @@ def design_1_redesigned(ax):
         [70, 55],  # Điểm bắt đầu đường cắt vát bên phải
         [52, 85]   # Điểm kết thúc đường cắt vát trên cùng
     ])
-    body_poly = Polygon(body_points, closed=True, fc=main_color, ec='none', antialiased=True)
+    body_points_transformed = (body_points - centroid) * scale + centroid
+    body_poly = Polygon(body_points_transformed, closed=True, fc=main_color, ec='none', antialiased=True)
     ax.add_patch(body_poly)
     
     # --- Khối 2: Phần "nếp gấp" (Góc trên bên phải) ---
@@ -47,9 +51,10 @@ def design_1_redesigned(ax):
         [75, 85],  # Góc phải trên cùng
         [75, 62]   # Góc dưới của nếp gấp
     ])
+    fold_points_transformed = (fold_points - centroid) * scale + centroid
     # Ta có thể dùng cùng màu hoặc màu nhạt hơn một chút để tạo chiều sâu.
     # Ở đây dùng cùng màu để tối đa sự tối giản.
-    fold_poly = Polygon(fold_points, closed=True, fc=main_color, ec='none', antialiased=True)
+    fold_poly = Polygon(fold_points_transformed, closed=True, fc=main_color, ec='none', antialiased=True)
     ax.add_patch(fold_poly)
 
 # Tạo logo với thiết kế mới

@@ -5,8 +5,8 @@ import numpy as np
 def create_logo_variant(filename, draw_func):
     # Canvas setup
     fig, ax = plt.subplots(figsize=(5, 5), dpi=300)
-    ax.set_xlim(0, 100)
-    ax.set_ylim(0, 100)
+    ax.set_xlim(-20, 120)
+    ax.set_ylim(-20, 120)
     ax.set_aspect('equal')
     ax.axis('off')
     
@@ -21,11 +21,12 @@ def design_with_background(ax):
     # Blue: #3498db, Purple: #9b59b6, Bright Blue: #007AFF
     # Choosing a Vibrant Purple/Blue mix or just Blue as requested.
     # User asked for "Blue or Purple". Let's use a nice Purple-Blue.
-    bg_color = '#6c5ce7' # Vibrant Purple-Blue
+    bg_color = '#69F0AE' # Bright Mint
+    bg_color = '#1B263B' # Navy
     
     # 1. Background Circle
-    # Center at 50, 50. Radius approx 48 to fit cleanly.
-    circle = Circle((50, 50), 48, fc=bg_color, ec='none', antialiased=True)
+    # Center at 50, 50. Radius increased proportionally with bookmark scale.
+    circle = Circle((50, 50), 69, fc=bg_color, ec='none', antialiased=True)
     ax.add_patch(circle)
     
     # 2. The Bookmark (Scaled and Centered)
@@ -33,13 +34,14 @@ def design_with_background(ax):
     # Center of original bookmark: x=50, y=52.5 roughly.
     # Code reused from previous script, but we might need to scale it down slightly to breathe in the circle.
     
-    # Scaling factor 0.7 to fit comfortably in circle
-    scale = 0.9
+    # Scaling factor to fit comfortably in circle
+    scale = 1.3
     center_shift_x = 50 * (1 - scale)
     center_shift_y = 50 * (1 - scale) 
     
     # Color for the bookmark: Dark/Black for contrast against bright background
-    mark_color = '#1e1e1e' # Almost black
+    mark_color = '#212121' # Almost black
+    mark_color = '#D4A017' # Warm Yellow
     
     # Original Bookmark Points
     body_points = np.array([
