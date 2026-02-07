@@ -5,6 +5,7 @@ import { useArchiveManager } from "./hooks/useArchiveManager"
 import { useDragAndDrop } from "./hooks/useDragAndDrop"
 import { useImportExport } from "./hooks/useImportExport"
 import { useContextMenu } from "./hooks/useContextMenu"
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts"
 import "./manager.css"
 
 function Manager() {
@@ -12,6 +13,9 @@ function Manager() {
   const [manualOrder, setManualOrder] = useState(false)
 
   const archive = useArchiveManager()
+  
+  // Initialize Keyboard Shortcuts
+  useKeyboardShortcuts(archive)
 
   const io = useImportExport({
     loadWindows: archive.loadWindows,

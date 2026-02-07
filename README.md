@@ -78,3 +78,29 @@ npm run dev
 - **UI**: React 18, TypeScript
 - **Storage**: Chrome Storage API
 - **Styling**: Native CSS Variables (Dark mode support)
+
+
+## Safari Support (macOS)
+
+This extension can be built for Safari on macOS.
+
+### Prerequisites
+- macOS
+- Xcode (for `xcrun`)
+
+### Build for Safari
+
+```bash
+npm run build:safari
+```
+This generates a `build/safari-mv2-prod` directory.
+
+### Installation
+1.  Open **Safari** > **Settings** > **Advanced**.
+2.  Check **"Show Develop menu in menu bar"**.
+3.  In the menu bar, select **Develop** > **Allow Unsigned Extensions**.
+4.  Run the following command to convert the build:
+    ```bash
+    xcrun safari-web-extension-converter build/safari-mv2-prod
+    ```
+5.  This will open Xcode. Run the project in Xcode to install the extension into Safari.
